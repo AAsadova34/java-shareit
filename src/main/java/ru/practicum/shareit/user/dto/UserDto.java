@@ -1,19 +1,17 @@
-package ru.practicum.shareit.item.dto;
+package ru.practicum.shareit.user.dto;
 
 import lombok.Builder;
 import lombok.Data;
 
+import javax.validation.constraints.Email;
 import javax.validation.constraints.PositiveOrZero;
 
-/**
- * TODO Sprint add-controllers.
- */
 @Data
 @Builder
-public class ItemDto {
+public class UserDto {
     @PositiveOrZero(message = "Id must not be negative")
     private long id;
     private String name;
-    private String description;
-    private Boolean available;
+    @Email(message = "Invalid email format")
+    private String email;
 }
