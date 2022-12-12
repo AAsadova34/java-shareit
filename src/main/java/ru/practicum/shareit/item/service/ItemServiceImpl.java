@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exception.ValidationException;
 import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
 import ru.practicum.shareit.user.service.UserService;
@@ -12,6 +11,9 @@ import ru.practicum.shareit.user.service.UserService;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static ru.practicum.shareit.item.dto.ItemMapper.convertToItem;
+import static ru.practicum.shareit.item.dto.ItemMapper.convertToItemDto;
 
 @Service
 @RequiredArgsConstructor
@@ -22,7 +24,7 @@ public class ItemServiceImpl implements ItemService {
     @Override
     public ItemDto addItem(long userId, ItemDto itemDto) {
         userService.getUserById(userId);
-        Item item = ItemMapper.convertToItem(userId, itemDto.getId(), itemDto);
+        Item item = convertToItem(userId, itemDto.getId(), itemDto);
         if (item.getName() == null || item.getName().isBlank()) {
             throw new ValidationException("Name must not be null or empty");
         }
@@ -33,13 +35,13 @@ public class ItemServiceImpl implements ItemService {
             throw new ValidationException("Available must not be null");
         }
         Item itemStorage = itemRepository.addItem(item);
-        return ItemMapper.convertToItemDto(itemStorage.getId(), itemStorage);
+        return convertToItemDto(itemStorage.getId(), itemStorage);
     }
 
     @Override
     public ItemDto updateItem(long userId, long itemId, ItemDto itemDto) {
         userService.getUserById(userId);
-        Item item = ItemMapper.convertToItem(userId, itemId, itemDto);
+        Item item = convertToItem(userId, itemId, itemDto);
         Item itemStorage = Item.builder().build();
         if (item.getName() != null && !item.getName().isBlank()) {
             itemStorage = itemRepository.updateNameItem(item);
@@ -50,27 +52,30 @@ public class ItemServiceImpl implements ItemService {
         if (item.getAvailable() != null) {
             itemStorage = itemRepository.updateAvailableItem(item);
         }
-        return ItemMapper.convertToItemDto(itemStorage.getId(), itemStorage);
+        return convertToItemDto(itemStorage.getId(), itemStorage);
     }
 
     @Override
-    public ItemDto getItemById(long itemId) {
+    public ItemDto getItemById(long userId, long itemId) {
+        userService.getUserById(userId);
         Item itemStorage = itemRepository.getItemById(itemId);
-        return ItemMapper.convertToItemDto(itemStorage.getId(), itemStorage);
+        return convertToItemDto(itemStorage.getId(), itemStorage);
     }
 
     @Override
     public List<ItemDto> getItems(long userId) {
+        userService.getUserById(userId);
         return itemRepository.getItems(userId).stream()
-                .map(item -> ItemMapper.convertToItemDto(item.getId(), item))
+                .map(item -> convertToItemDto(item.getId(), item))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<ItemDto> findByNameOrDescription(String text) {
+    public List<ItemDto> findByNameOrDescription(long userId, String text) {
+        userService.getUserById(userId);
         if (text != null && !text.isBlank()) {
             return itemRepository.findByNameOrDescription(text).stream()
-                    .map(item -> ItemMapper.convertToItemDto(item.getId(), item))
+                    .map(item -> convertToItemDto(item.getId(), item))
                     .collect(Collectors.toList());
         }
         return new ArrayList<>();

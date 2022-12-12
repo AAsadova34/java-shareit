@@ -1,7 +1,9 @@
 package ru.practicum.shareit.item.dto;
 
+import lombok.experimental.UtilityClass;
 import ru.practicum.shareit.item.model.Item;
 
+@UtilityClass
 public class ItemMapper {
     public static Item convertToItem(long userId, long itemId, ItemDto itemDto) {
         return Item.builder()
