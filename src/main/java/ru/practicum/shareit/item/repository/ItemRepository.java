@@ -1,21 +1,25 @@
 package ru.practicum.shareit.item.repository;
 
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
 import ru.practicum.shareit.item.model.Item;
 
 import java.util.List;
 
-public interface ItemRepository {
-    Item addItem(Item item);
+@RepositoryRestResource
+public interface ItemRepository extends JpaRepository<Item, Long> {
+    Item save(Item item);
 
-    Item updateNameItem(Item item);
+    Item getReferenceById(long itemId);
 
-    Item updateDescriptionItem(Item item);
+    boolean existsById(long itemId);
 
-    Item updateAvailableItem(Item item);
+    List<Item> findAllByUserIdOrderById(long userId);
 
-    Item getItemById(long itemId);
-
-    List<Item> getItems(long userId);
-
-    List<Item> findByNameOrDescription(String text);
+    @Query("SELECT new Item(i.id, i.userId, i.name, i.description, i.available) " +
+            "FROM Item AS i " +
+            "WHERE i.available = TRUE " +
+            "AND (LOWER(i.name) LIKE %?1% OR LOWER(i.description) LIKE %?2%)")
+    List<Item> findByNameOrDescription(String name, String description);
 }

@@ -1,17 +1,30 @@
 package ru.practicum.shareit.item.service;
 
-import ru.practicum.shareit.item.dto.ItemDto;
+import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.item.comment.dto.CommentInnerDto;
+import ru.practicum.shareit.item.comment.dto.CommentOutDto;
+import ru.practicum.shareit.item.dto.ItemInnerDto;
+import ru.practicum.shareit.item.dto.ItemOutLongDto;
+import ru.practicum.shareit.item.dto.ItemOutShortDto;
 
 import java.util.List;
 
 public interface ItemService {
-    ItemDto addItem(long userId, ItemDto itemDto);
+    @Transactional
+    ItemOutShortDto addItem(long userId, ItemInnerDto itemInnerDto);
 
-    ItemDto updateItem(long userId, long itemId, ItemDto itemDto);
+    @Transactional
+    ItemOutShortDto updateItem(long userId, long itemId, ItemInnerDto itemInnerDto);
 
-    ItemDto getItemById(long userId, long itemId);
+    @Transactional(readOnly = true)
+    ItemOutLongDto getItemById(long userId, long itemId);
 
-    List<ItemDto> getItems(long userId);
+    @Transactional(readOnly = true)
+    List<ItemOutLongDto> getItems(long userId);
 
-    List<ItemDto> findByNameOrDescription(long userId, String text);
+    @Transactional(readOnly = true)
+    List<ItemOutShortDto> findByNameOrDescription(long userId, String text);
+
+    @Transactional
+    CommentOutDto addComment(long userId, long itemId, CommentInnerDto commentInnerDto);
 }
