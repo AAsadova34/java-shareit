@@ -2,10 +2,12 @@ package ru.practicum.shareit.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import javax.persistence.EntityNotFoundException;
 import java.util.Objects;
 
 import static ru.practicum.shareit.log.Logger.logWarnException;
@@ -13,7 +15,8 @@ import static ru.practicum.shareit.log.Logger.logWarnException;
 @RestControllerAdvice
 public class ErrorHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    @ExceptionHandler({ValidationException.class, MethodArgumentNotValidException.class})
+    @ExceptionHandler({ValidationException.class, MethodArgumentNotValidException.class,
+            MissingRequestHeaderException.class})
     public ErrorResponse handleValidationException(Exception e) {
         logWarnException(e);
         String message;
@@ -27,8 +30,8 @@ public class ErrorHandler {
     }
 
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    @ExceptionHandler
-    public ErrorResponse handleNotFoundException(NotFoundException e) {
+    @ExceptionHandler({EntityNotFoundException.class, NotFoundException.class})
+    public ErrorResponse handleNotFoundException(Exception e) {
         logWarnException(e);
         return new ErrorResponse(404, "Not Found", e.getMessage());
     }
