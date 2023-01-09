@@ -15,9 +15,6 @@ import java.util.List;
 
 import static ru.practicum.shareit.log.Logger.logRequest;
 
-/**
- * TODO Sprint add-controllers.
- */
 @RestController
 @RequestMapping("/items")
 @RequiredArgsConstructor

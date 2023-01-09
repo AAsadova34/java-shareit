@@ -6,9 +6,6 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.PositiveOrZero;
 
-/**
- * TODO Sprint add-controllers.
- */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

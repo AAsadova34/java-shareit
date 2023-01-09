@@ -7,9 +7,6 @@ import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
 
-/**
- * TODO Sprint add-bookings.
- */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
