@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.persistence.EntityNotFoundException;
+import javax.validation.ConstraintViolationException;
 import java.util.Objects;
 
 import static ru.practicum.shareit.log.Logger.logWarnException;
@@ -16,7 +17,7 @@ import static ru.practicum.shareit.log.Logger.logWarnException;
 public class ErrorHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler({ValidationException.class, MethodArgumentNotValidException.class,
-            MissingRequestHeaderException.class})
+            MissingRequestHeaderException.class, ConstraintViolationException.class})
     public ErrorResponse handleValidationException(Exception e) {
         logWarnException(e);
         String message;
@@ -47,6 +48,6 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleThrowable(final Throwable e) {
         logWarnException(e);
-        return new ErrorResponse(500, "Internal Server Error", "Произошла непредвиденная ошибка.");
+        return new ErrorResponse(500, "Internal Server Error", "An unexpected error has occurred");
     }
 }

@@ -17,8 +17,8 @@ public interface BookingService {
     BookingOutDto getBookingById(long userId, long bookingId);
 
     @Transactional(readOnly = true)
-    List<BookingOutDto> getBookingsForBooker(long bookerId, String state);
+    List<BookingOutDto> getBookingsForBooker(long bookerId, String state, Integer from, Integer size);
 
     @Transactional(readOnly = true)
-    List<BookingOutDto> getBookingsForOwner(long ownerId, String state);
+    List<BookingOutDto> getBookingsForOwner(long ownerId, String state, Integer from, Integer size);
 }

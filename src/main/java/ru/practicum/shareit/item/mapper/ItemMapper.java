@@ -18,6 +18,7 @@ public class ItemMapper {
         item.setName(itemInnerDto.getName());
         item.setDescription(itemInnerDto.getDescription());
         item.setAvailable(itemInnerDto.getAvailable());
+        item.setRequestId(itemInnerDto.getRequestId());
         return item;
     }
 
@@ -27,11 +28,14 @@ public class ItemMapper {
         itemOutShortDto.setName(item.getName());
         itemOutShortDto.setDescription(item.getDescription());
         itemOutShortDto.setAvailable(item.getAvailable());
+        itemOutShortDto.setRequestId(item.getRequestId());
         return itemOutShortDto;
     }
 
-    public static ItemOutLongDto toItemOutLongDto(Item item, BookingForItemDto lastBooking,
-                                                  BookingForItemDto nextBooking, List<CommentOutDto> comments) {
+    public static ItemOutLongDto toItemOutLongDto(Item item,
+                                                  BookingForItemDto lastBooking,
+                                                  BookingForItemDto nextBooking,
+                                                  List<CommentOutDto> comments) {
         ItemOutLongDto itemOutLongDto = new ItemOutLongDto();
         itemOutLongDto.setId(item.getId());
         itemOutLongDto.setName(item.getName());

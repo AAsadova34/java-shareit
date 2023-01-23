@@ -10,12 +10,32 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.springframework.data.domain.Pageable;
+
 @RepositoryRestResource
 public interface BookingRepository extends JpaRepository<Booking, Long> {
     Booking save(Booking booking);
 
     Booking getReferenceById(long bookingId);
 
+
+    //Запросы бронирующего (с пагинацией)
+    List<Booking> findAllByBookerIdOrderByStartDesc(long bookerId, Pageable pageable);
+
+    List<Booking> findAllByBookerIdAndStatusOrderByStartDesc(long bookerId, BookingStatus status, Pageable pageable);
+
+    List<Booking> findAllByBookerIdAndEndBeforeOrderByStartDesc(long bookerId, LocalDateTime dataTime, Pageable pageable);
+
+    List<Booking> findAllByBookerIdAndStartAfterOrderByStartDesc(long bookerId, LocalDateTime dataTime, Pageable pageable);
+
+    @Query("SELECT new Booking(b.id, b.start, b.end, b.item, b.booker, b.status) " +
+            "FROM Booking AS b " +
+            "WHERE b.booker.id = ?1 AND ?2 BETWEEN b.start AND b.end " +
+            "ORDER BY b.start desc")
+    List<Booking> findAllByBookerIdAndCurrent(long bookerId, LocalDateTime dataTime, Pageable pageable);
+
+
+    //Запросы бронирующего (без пагинации)
     List<Booking> findAllByBookerIdOrderByStartDesc(long bookerId);
 
     List<Booking> findAllByBookerIdAndStatusOrderByStartDesc(long bookerId, BookingStatus status);
@@ -30,6 +50,40 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "ORDER BY b.start desc")
     List<Booking> findAllByBookerIdAndCurrent(long bookerId, LocalDateTime dataTime);
 
+
+    //Запросы владельца (с пагинацией)
+    @Query("SELECT new Booking(b.id, b.start, b.end, b.item, b.booker, b.status) " +
+            "FROM Booking AS b " +
+            "WHERE b.item.userId = ?1 " +
+            "ORDER BY b.start desc")
+    List<Booking> findAllByOwnerId(long ownerId, Pageable pageable);
+
+    @Query("SELECT new Booking(b.id, b.start, b.end, b.item, b.booker, b.status) " +
+            "FROM Booking AS b " +
+            "WHERE b.item.userId = ?1 AND b.status = ?2 " +
+            "ORDER BY b.start desc")
+    List<Booking> findAllByOwnerIdAndStatus(long ownerId, BookingStatus status, Pageable pageable);
+
+    @Query("SELECT new Booking(b.id, b.start, b.end, b.item, b.booker, b.status) " +
+            "FROM Booking AS b " +
+            "WHERE b.item.userId = ?1 AND b.end < ?2  " +
+            "ORDER BY b.start desc")
+    List<Booking> findAllByOwnerIdAndPast(long ownerId, LocalDateTime dataTime, Pageable pageable);
+
+    @Query("SELECT new Booking(b.id, b.start, b.end, b.item, b.booker, b.status) " +
+            "FROM Booking AS b " +
+            "WHERE b.item.userId = ?1 AND ?2 < b.start " +
+            "ORDER BY b.start desc")
+    List<Booking> findAllByOwnerIdAndFuture(long ownerId, LocalDateTime dataTime, Pageable pageable);
+
+    @Query("SELECT new Booking(b.id, b.start, b.end, b.item, b.booker, b.status) " +
+            "FROM Booking AS b " +
+            "WHERE b.item.userId = ?1 AND ?2 BETWEEN b.start AND b.end " +
+            "ORDER BY b.start desc")
+    List<Booking> findAllByOwnerIdAndCurrent(long ownerId, LocalDateTime dataTime, Pageable pageable);
+
+
+    //Запросы владельца (без пагинации)
     @Query("SELECT new Booking(b.id, b.start, b.end, b.item, b.booker, b.status) " +
             "FROM Booking AS b " +
             "WHERE b.item.userId = ?1 " +
@@ -59,6 +113,7 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "WHERE b.item.userId = ?1 AND ?2 BETWEEN b.start AND b.end " +
             "ORDER BY b.start desc")
     List<Booking> findAllByOwnerIdAndCurrent(long ownerId, LocalDateTime dataTime);
+
 
     @Query(value = "SELECT b.* " +
             "FROM bookings AS b " +
