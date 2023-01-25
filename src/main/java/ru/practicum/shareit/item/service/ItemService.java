@@ -20,10 +20,10 @@ public interface ItemService {
     ItemOutLongDto getItemById(long userId, long itemId);
 
     @Transactional(readOnly = true)
-    List<ItemOutLongDto> getItems(long userId);
+    List<ItemOutLongDto> getItems(long userId, Integer from, Integer size);
 
     @Transactional(readOnly = true)
-    List<ItemOutShortDto> findByNameOrDescription(long userId, String text);
+    List<ItemOutShortDto> findItemsByNameOrDescription(long userId, String text, Integer from, Integer size);
 
     @Transactional
     CommentOutDto addComment(long userId, long itemId, CommentInnerDto commentInnerDto);

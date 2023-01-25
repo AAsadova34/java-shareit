@@ -1,6 +1,8 @@
 package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingInnerDto;
@@ -102,8 +104,61 @@ public class BookingServiceImpl implements BookingService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<BookingOutDto> getBookingsForBooker(long bookerId, String state) {
+    public List<BookingOutDto> getBookingsForBooker(long bookerId, String state, Integer from, Integer size) {
         checkUserExists(userRepository, bookerId);
+        List<Booking> bookings;
+        if (from != null && size != null) {
+            bookings = getBookingsForBookerWithPagination(bookerId, state, from, size);
+        } else {
+            bookings = getBookingsForBookerWithoutPagination(bookerId, state);
+        }
+        return toListBookingOutDto(bookings);
+    }
+
+    @Transactional(readOnly = true)
+    @Override
+    public List<BookingOutDto> getBookingsForOwner(long ownerId, String state, Integer from, Integer size) {
+        checkUserExists(userRepository, ownerId);
+        List<Booking> bookings;
+        if (from != null && size != null) {
+            bookings = getBookingsForOwnerWithPagination(ownerId, state, from, size);
+        } else {
+            bookings = getBookingsForOwnerWithoutPagination(ownerId, state);
+        }
+        return toListBookingOutDto(bookings);
+    }
+
+    private List<Booking> getBookingsForBookerWithPagination(long bookerId, String state, Integer from, Integer size) {
+        List<Booking> bookings = new ArrayList<>();
+        Pageable pageable = PageRequest.of(from / size, size);
+        try {
+            switch (BookingState.valueOf(state)) {
+                case ALL:
+                    bookings = bookingRepository.findAllByBookerIdOrderByStartDesc(bookerId, pageable);
+                    break;
+                case WAITING:
+                case REJECTED:
+                    bookings = bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(bookerId,
+                            BookingStatus.valueOf(state), pageable);
+                    break;
+                case PAST:
+                    bookings = bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(bookerId,
+                            LocalDateTime.now(), pageable);
+                    break;
+                case FUTURE:
+                    bookings = bookingRepository.findAllByBookerIdAndStartAfterOrderByStartDesc(bookerId,
+                            LocalDateTime.now(), pageable);
+                    break;
+                case CURRENT:
+                    bookings = bookingRepository.findAllByBookerIdAndCurrent(bookerId, LocalDateTime.now(), pageable);
+            }
+        } catch (IllegalArgumentException e) {
+            throw new ValidationException(String.format("Unknown state: %s", state));
+        }
+        return bookings;
+    }
+
+    private List<Booking> getBookingsForBookerWithoutPagination(long bookerId, String state) {
         List<Booking> bookings = new ArrayList<>();
         try {
             switch (BookingState.valueOf(state)) {
@@ -129,13 +184,38 @@ public class BookingServiceImpl implements BookingService {
         } catch (IllegalArgumentException e) {
             throw new ValidationException(String.format("Unknown state: %s", state));
         }
-        return toListBookingOutDto(bookings);
+        return bookings;
     }
 
-    @Transactional(readOnly = true)
-    @Override
-    public List<BookingOutDto> getBookingsForOwner(long ownerId, String state) {
-        checkUserExists(userRepository, ownerId);
+    private List<Booking> getBookingsForOwnerWithPagination(long ownerId, String state, Integer from, Integer size) {
+        List<Booking> bookings = new ArrayList<>();
+        Pageable pageable = PageRequest.of(from / size, size);
+        try {
+            switch (BookingState.valueOf(state)) {
+                case ALL:
+                    bookings = bookingRepository.findAllByOwnerId(ownerId, pageable);
+                    break;
+                case WAITING:
+                case REJECTED:
+                    bookings = bookingRepository.findAllByOwnerIdAndStatus(ownerId, BookingStatus.valueOf(state),
+                            pageable);
+                    break;
+                case PAST:
+                    bookings = bookingRepository.findAllByOwnerIdAndPast(ownerId, LocalDateTime.now(), pageable);
+                    break;
+                case FUTURE:
+                    bookings = bookingRepository.findAllByOwnerIdAndFuture(ownerId, LocalDateTime.now(), pageable);
+                    break;
+                case CURRENT:
+                    bookings = bookingRepository.findAllByOwnerIdAndCurrent(ownerId, LocalDateTime.now(), pageable);
+            }
+        } catch (IllegalArgumentException e) {
+            throw new ValidationException(String.format("Unknown state: %s", state));
+        }
+        return bookings;
+    }
+
+    private List<Booking> getBookingsForOwnerWithoutPagination(long ownerId, String state) {
         List<Booking> bookings = new ArrayList<>();
         try {
             switch (BookingState.valueOf(state)) {
@@ -158,7 +238,7 @@ public class BookingServiceImpl implements BookingService {
         } catch (IllegalArgumentException e) {
             throw new ValidationException(String.format("Unknown state: %s", state));
         }
-        return toListBookingOutDto(bookings);
+        return bookings;
     }
 
     private List<BookingOutDto> toListBookingOutDto(List<Booking> bookings) {

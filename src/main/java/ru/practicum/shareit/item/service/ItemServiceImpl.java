@@ -1,6 +1,8 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingForItemDto;
@@ -18,6 +20,7 @@ import ru.practicum.shareit.item.dto.ItemOutLongDto;
 import ru.practicum.shareit.item.dto.ItemOutShortDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.repository.ItemRequestRepository;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
@@ -32,8 +35,7 @@ import static ru.practicum.shareit.item.comment.mapper.CommentsMapper.toComment;
 import static ru.practicum.shareit.item.comment.mapper.CommentsMapper.toCommentOutDto;
 import static ru.practicum.shareit.item.mapper.ItemMapper.*;
 import static ru.practicum.shareit.log.Logger.logStorageChanges;
-import static ru.practicum.shareit.validation.Validation.checkItemExists;
-import static ru.practicum.shareit.validation.Validation.checkUserExists;
+import static ru.practicum.shareit.validation.Validation.*;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +44,7 @@ public class ItemServiceImpl implements ItemService {
     private final UserRepository userRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final ItemRequestRepository itemRequestRepository;
 
     @Transactional
     @Override
@@ -55,6 +58,9 @@ public class ItemServiceImpl implements ItemService {
         }
         if (itemInnerDto.getAvailable() == null) {
             throw new ValidationException("Available must not be null");
+        }
+        if (itemInnerDto.getRequestId() != null) {
+            checkItemRequestExists(itemRequestRepository, itemInnerDto.getRequestId());
         }
         Item item = toItem(userId, itemInnerDto);
         Item itemStorage = itemRepository.save(item);
@@ -107,10 +113,17 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<ItemOutLongDto> getItems(long userId) {
+    public List<ItemOutLongDto> getItems(long userId, Integer from, Integer size) {
         checkUserExists(userRepository, userId);
+        List<Item> items;
+        if (from != null && size != null) {
+            Pageable pageable = PageRequest.of(from / size, size);
+            items = itemRepository.findAllByUserIdOrderById(userId, pageable);
+        } else {
+            items = itemRepository.findAllByUserIdOrderById(userId);
+        }
         LocalDateTime now = LocalDateTime.now();
-        return itemRepository.findAllByUserIdOrderById(userId).stream()
+        return items.stream()
                 .map(item -> toItemOutLongDto(item, getLastBookingDto(item, now),
                         getNextBookingDto(item, now), getCommentsDtoForItem(item)))
                 .collect(Collectors.toList());
@@ -118,15 +131,22 @@ public class ItemServiceImpl implements ItemService {
 
     @Transactional(readOnly = true)
     @Override
-    public List<ItemOutShortDto> findByNameOrDescription(long userId, String text) {
+    public List<ItemOutShortDto> findItemsByNameOrDescription(long userId, String text, Integer from, Integer size) {
         checkUserExists(userRepository, userId);
-        if (text != null && !text.isBlank()) {
-            String formattedText = text.toLowerCase();
-            return itemRepository.findByNameOrDescription(formattedText, formattedText).stream()
-                    .map(item -> toItemOutShortDto(item.getId(), item))
-                    .collect(Collectors.toList());
+        if (text.isBlank()) {
+            return new ArrayList<>();
         }
-        return new ArrayList<>();
+        String formattedText = text.toLowerCase();
+        List<Item> items;
+        if (from != null && size != null) {
+            Pageable pageable = PageRequest.of(from / size, size);
+            items = itemRepository.findByNameOrDescription(formattedText, formattedText, pageable);
+        } else {
+            items = itemRepository.findByNameOrDescription(formattedText, formattedText);
+        }
+        return items.stream()
+                .map(item -> toItemOutShortDto(item.getId(), item))
+                .collect(Collectors.toList());
     }
 
     @Override
@@ -135,18 +155,17 @@ public class ItemServiceImpl implements ItemService {
         checkItemExists(itemRepository, itemId);
         LocalDateTime now = LocalDateTime.now();
         List<Booking> bookings = bookingRepository.findAllByBookerAndFinished(itemId, userId, now);
-        if (bookings == null || bookings.isEmpty()) {
+        if (bookings.isEmpty()) {
             throw new ValidationException(String.format("User with id %s did not book the item with id %s " +
                     "or the reservation has not ended yet.", userId, itemId));
         }
         User author = userRepository.getReferenceById(userId);
         Item item = itemRepository.getReferenceById(itemId);
-        Comment comment = toComment(commentInnerDto, item, author, now);
+        Comment comment = toComment(commentInnerDto, item, author);
         Comment commentStorage = commentRepository.save(comment);
         logStorageChanges("Add comment", commentStorage.toString());
         return toCommentOutDto(commentStorage);
     }
-
 
     private BookingForItemDto getLastBookingDto(Item item, LocalDateTime dataTime) {
         BookingForItemDto lastBooking = null;
@@ -167,12 +186,13 @@ public class ItemServiceImpl implements ItemService {
     }
 
     private List<CommentOutDto> getCommentsDtoForItem(Item item) {
-        List<Comment> comments = commentRepository.findAllByItem(item);
-        if (comments != null && !comments.isEmpty()) {
-            return comments.stream()
-                    .map(CommentsMapper::toCommentOutDto)
-                    .collect(Collectors.toList());
+        List<Comment> comments = commentRepository.findAllByItemId(item.getId());
+        if (comments == null || comments.isEmpty()) {
+            return new ArrayList<>();
         }
-        return new ArrayList<>();
+        return comments.stream()
+                .map(CommentsMapper::toCommentOutDto)
+                .collect(Collectors.toList());
     }
+
 }

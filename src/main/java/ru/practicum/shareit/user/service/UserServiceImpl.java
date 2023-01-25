@@ -67,6 +67,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public void delUserById(long id) {
+        checkUserExists(userRepository, id);
         userRepository.deleteById(id);
         logStorageChanges("Delete", String.format("User with id %s", id));
     }

@@ -7,16 +7,13 @@ import ru.practicum.shareit.item.comment.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
-import java.time.LocalDateTime;
-
 @UtilityClass
 public class CommentsMapper {
-    public static Comment toComment(CommentInnerDto commentInnerDto, Item item, User author, LocalDateTime dataTime) {
+    public static Comment toComment(CommentInnerDto commentInnerDto, Item item, User author) {
         Comment comment = new Comment();
         comment.setText(commentInnerDto.getText());
         comment.setItem(item);
         comment.setAuthor(author);
-        comment.setCreated(dataTime);
         return comment;
     }
 
