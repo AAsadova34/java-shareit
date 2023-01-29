@@ -9,7 +9,9 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "users")
-@Getter @Setter @ToString
+@Getter
+@Setter
+@ToString
 @Accessors(chain = true)
 public class User {
     @Id

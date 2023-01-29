@@ -7,7 +7,7 @@ import ru.practicum.shareit.user.model.User;
 import java.util.List;
 
 @RepositoryRestResource
-public interface UserRepository extends JpaRepository<User, Long>{
+public interface UserRepository extends JpaRepository<User, Long> {
     User save(User user);
 
     User getReferenceById(long id);

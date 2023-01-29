@@ -57,9 +57,9 @@ public class ItemController {
 
     @GetMapping("/search")
     public List<ItemOutShortDto> findItemsByNameOrDescription(@RequestHeader(HEADER_CALLER_ID) long userId,
-                                                         @RequestParam String text,
-                                                         @RequestParam(required = false) Integer from,
-                                                         @RequestParam(required = false) Integer size) {
+                                                              @RequestParam String text,
+                                                              @RequestParam(required = false) Integer from,
+                                                              @RequestParam(required = false) Integer size) {
         logRequest(HttpMethod.GET, String.format("items/search?text=%s&from=%s&size=%s", text, from, size),
                 HEADER_CALLER_ID + userId, "no");
         return itemService.findItemsByNameOrDescription(userId, text, from, size);

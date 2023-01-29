@@ -24,7 +24,7 @@ public class UserServiceImpl implements UserService {
     @Transactional
     @Override
     public UserDto addUser(UserDto userDto) {
-        if(userDto.getId() != null) {
+        if (userDto.getId() != null) {
             throw new ConflictException("The user id should be generated automatically");
         }
         if (userDto.getEmail() == null || userDto.getEmail().isBlank()) {
