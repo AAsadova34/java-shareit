@@ -560,8 +560,8 @@ class ItemServiceImplTest {
                 .setAvailable(true)
                 .setComments(new ArrayList<>());
         when(userRepository.existsById(userId)).thenReturn(true);
-        when(itemRepository.findAllByUserIdOrderById(userId, PageRequest.of(from / size, size))).
-                thenReturn(items);
+        when(itemRepository.findAllByUserIdOrderById(userId, PageRequest.of(from / size, size)))
+                .thenReturn(items);
 
         List<ItemOutLongDto> actualItems = itemService.getItems(userId, from, size);
 
