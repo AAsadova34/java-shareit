@@ -14,7 +14,6 @@ import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.repository.UserRepository;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -99,7 +98,7 @@ class ItemRequestRepositoryTest {
     }
 
     @Test
-    void getReferenceById(){
+    void getReferenceById() {
         ItemRequest newRequest = new ItemRequest()
                 .setDescription("Some item")
                 .setRequestor(requestorStorage);

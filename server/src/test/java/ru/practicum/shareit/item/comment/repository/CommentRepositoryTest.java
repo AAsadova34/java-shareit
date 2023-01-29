@@ -27,7 +27,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @Import(Config.class)
 class CommentRepositoryTest {
     @Autowired
-    private  CommentRepository commentRepository;
+    private CommentRepository commentRepository;
     @Autowired
     private UserRepository userRepository;
     @Autowired

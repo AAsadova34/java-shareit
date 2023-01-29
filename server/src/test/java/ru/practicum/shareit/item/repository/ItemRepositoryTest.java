@@ -86,7 +86,7 @@ class ItemRepositoryTest {
         assertThat(newItem.getName(), equalTo(itemStorage.getName()));
         assertThat(newItem.getDescription(), equalTo(itemStorage.getDescription()));
         assertThat(newItem.getAvailable(), equalTo(itemStorage.getAvailable()));
-        assertThat(requestStorage.getId(),  equalTo(itemStorage.getRequestId()));
+        assertThat(requestStorage.getId(), equalTo(itemStorage.getRequestId()));
     }
 
     @Test
