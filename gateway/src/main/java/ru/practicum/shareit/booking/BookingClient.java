@@ -64,7 +64,7 @@ public class BookingClient extends BaseClient {
         }
     }
 
-    private Map<String, Object> getParameters(BookingState state, Integer from, Integer size){
+    private Map<String, Object> getParameters(BookingState state, Integer from, Integer size) {
         Map<String, Object> parameters;
         if (from == null || size == null) {
             parameters = Map.of(

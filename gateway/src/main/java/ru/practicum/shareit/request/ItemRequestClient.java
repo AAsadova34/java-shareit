@@ -26,15 +26,15 @@ public class ItemRequestClient extends BaseClient {
         );
     }
 
-    public ResponseEntity<Object> addItemRequest(long userId, ItemRequestInnerDto itemRequestInnerDto){
+    public ResponseEntity<Object> addItemRequest(long userId, ItemRequestInnerDto itemRequestInnerDto) {
         return post("", userId, itemRequestInnerDto);
     }
 
-    public ResponseEntity<Object> getYourItemRequests(long userId){
+    public ResponseEntity<Object> getYourItemRequests(long userId) {
         return get("", userId);
     }
 
-    public ResponseEntity<Object> getItemRequestsFromOthers(long userId, Integer from, Integer size){
+    public ResponseEntity<Object> getItemRequestsFromOthers(long userId, Integer from, Integer size) {
         if (from == null || size == null) {
             return get("/all", userId);
         } else {
@@ -46,7 +46,7 @@ public class ItemRequestClient extends BaseClient {
         }
     }
 
-    public ResponseEntity<Object> getItemRequestById(long userId, long requestId){
+    public ResponseEntity<Object> getItemRequestById(long userId, long requestId) {
         return get("/" + requestId, userId);
     }
 
