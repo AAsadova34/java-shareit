@@ -1,11 +1,14 @@
 package ru.practicum.shareit.exception;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import javax.persistence.EntityNotFoundException;
 import javax.validation.ConstraintViolationException;
@@ -17,13 +20,20 @@ import static ru.practicum.shareit.log.Logger.logWarnException;
 public class ErrorHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler({ValidationException.class, MethodArgumentNotValidException.class,
-            MissingRequestHeaderException.class, ConstraintViolationException.class})
+            MissingRequestHeaderException.class, ConstraintViolationException.class,
+            HttpRequestMethodNotSupportedException.class, MethodArgumentTypeMismatchException.class})
     public ErrorResponse handleValidationException(Exception e) {
         logWarnException(e);
         String message;
         if (e instanceof MethodArgumentNotValidException) {
             MethodArgumentNotValidException eValidation = (MethodArgumentNotValidException) e;
             message = Objects.requireNonNull(eValidation.getBindingResult().getFieldError()).getDefaultMessage();
+        } else if (e instanceof HttpRequestMethodNotSupportedException) {
+            HttpRequestMethodNotSupportedException eHttpRequestMethod = (HttpRequestMethodNotSupportedException) e;
+            message = eHttpRequestMethod.getLocalizedMessage();
+        } else if (e instanceof MethodArgumentTypeMismatchException) {
+            MethodArgumentTypeMismatchException eMethodArgumentTypeMismatch = (MethodArgumentTypeMismatchException) e;
+            message = eMethodArgumentTypeMismatch.getLocalizedMessage();
         } else {
             message = e.getMessage();
         }
@@ -38,10 +48,17 @@ public class ErrorHandler {
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)
-    @ExceptionHandler
-    public ErrorResponse handleConflictException(ConflictException e) {
+    @ExceptionHandler({ConflictException.class, DataIntegrityViolationException.class})
+    public ErrorResponse handleConflictException(Exception e) {
         logWarnException(e);
-        return new ErrorResponse(409, "Conflict", e.getMessage());
+        String message;
+        if (e instanceof DataIntegrityViolationException) {
+            DataIntegrityViolationException eDataIntegrityViolation = (DataIntegrityViolationException) e;
+            message = eDataIntegrityViolation.getMostSpecificCause().getLocalizedMessage();
+        } else {
+            message = e.getMessage();
+        }
+        return new ErrorResponse(409, "Conflict", message);
     }
 
     @ExceptionHandler

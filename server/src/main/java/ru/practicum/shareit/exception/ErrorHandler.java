@@ -1,5 +1,6 @@
 package ru.practicum.shareit.exception;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.MissingRequestHeaderException;
@@ -38,10 +39,17 @@ public class ErrorHandler {
     }
 
     @ResponseStatus(HttpStatus.CONFLICT)
-    @ExceptionHandler
-    public ErrorResponse handleConflictException(ConflictException e) {
+    @ExceptionHandler({ConflictException.class, DataIntegrityViolationException.class})
+    public ErrorResponse handleConflictException(Exception e) {
         logWarnException(e);
-        return new ErrorResponse(409, "Conflict", e.getMessage());
+        String message;
+        if (e instanceof DataIntegrityViolationException) {
+            DataIntegrityViolationException eDataIntegrityViolation = (DataIntegrityViolationException) e;
+            message = eDataIntegrityViolation.getMostSpecificCause().getMessage();
+        } else {
+            message = e.getMessage();
+        }
+        return new ErrorResponse(409, "Conflict", message);
     }
 
     @ExceptionHandler
